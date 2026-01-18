@@ -15,6 +15,20 @@ namespace CampusAPI.Controllers
         {
             _context = context;
         }
+        // POST: api/Auth/register
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(User user)
+        {
+            // 1. Check if username already exists
+            if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+                return BadRequest("Username already taken.");
+
+            // 2. Add the user to the database
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Registration successful!" });
+        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)

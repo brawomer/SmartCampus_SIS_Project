@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Campus Admin</title>
+</head>
+<body>
+    <h1>Broken Assets List</h1>
+    <div id="assets">Loading...</div>
+
+    <script>
+    const API_URL = 'https://localhost:7229/api/Maintenance/broken'; // DOUBLE CHECK THIS PORT!
+
+async function getBroken() {
+    try {
+        console.log("Attempting to connect to: " + API_URL);
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Data received:", data);
+
+        if (data.length === 0) {
+            document.getElementById('assets').innerHTML = "No broken assets found in database.";
+            return;
+        }
+
+        let html = '<ul>';
+        data.forEach(item => {
+            html += `<li><strong>${item.assetName}</strong>: ${item.lastIssue || "No description"}</li>`;
+        });
+        html += '</ul>';
+        document.getElementById('assets').innerHTML = html;
+
+    } catch (error) {
+        console.error("Connection failed:", error);
+        document.getElementById('assets').innerHTML = "Connection Error: " + error.message;
+    }
+}
+getBroken();
+    </script>
+</body>
+</html>

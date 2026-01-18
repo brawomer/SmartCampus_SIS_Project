@@ -7,13 +7,11 @@ namespace CampusAPI.Models
     {
         [Key]
         public int EnrollmentId { get; set; }
-
-        public int UserId { get; set; }
+        public int UserId { get; set; } // The Student
+        public int CourseId { get; set; } // The Subject
 
         [ForeignKey("UserId")]
-        public User? User { get; set; }
-
-        public int CourseId { get; set; }
+        public User? Student { get; set; }
 
         [ForeignKey("CourseId")]
         public Course? Course { get; set; }
