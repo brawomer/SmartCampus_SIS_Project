@@ -8,25 +8,38 @@
     <div id="assets">Loading...</div>
 
     <script>
-        // Replace with your actual local URL from Visual Studio (e.g., https://localhost:7123)
-        const API_URL = 'https://localhost:7229/swagger/index.html';
+    const API_URL = 'https://localhost:7229/api/Maintenance/broken'; // DOUBLE CHECK THIS PORT!
 
-        async function getBroken() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                let html = '<ul>';
-                data.forEach(item => {
-                    html += `<li>${item.assetName} - Status: ${item.status}</li>`;
-                });
-                html += '</ul>';
-                document.getElementById('assets').innerHTML = html;
-            } catch (error) {
-                document.getElementById('assets').innerHTML = "Error connecting to Backend!";
-            }
+async function getBroken() {
+    try {
+        console.log("Attempting to connect to: " + API_URL);
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        getBroken();
+
+        const data = await response.json();
+        console.log("Data received:", data);
+
+        if (data.length === 0) {
+            document.getElementById('assets').innerHTML = "No broken assets found in database.";
+            return;
+        }
+
+        let html = '<ul>';
+        data.forEach(item => {
+            html += `<li><strong>${item.assetName}</strong>: ${item.lastIssue || "No description"}</li>`;
+        });
+        html += '</ul>';
+        document.getElementById('assets').innerHTML = html;
+
+    } catch (error) {
+        console.error("Connection failed:", error);
+        document.getElementById('assets').innerHTML = "Connection Error: " + error.message;
+    }
+}
+getBroken();
     </script>
 </body>
 </html>
