@@ -137,14 +137,6 @@ export default function App() {
               </svg>
             </button>
           </div>
-
-          {/* Sign up link */}
-          <p className="text-center mt-6 text-white/80">
-            Don't have an account?{' '}
-            <a href="#" className="text-white font-semibold hover:underline">
-              Sign up
-            </a>
-          </p>
         </div>
       </div>
 
