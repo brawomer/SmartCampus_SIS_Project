@@ -1,15 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace CampusAPI.Models
+﻿public class Course
 {
-    public class Course
-    {
-        [Key]
-        public int CourseId { get; set; }
+    public int CourseId { get; set; }
+    public string CourseName { get; set; }
 
-        [Required]
-        public string CourseName { get; set; } = string.Empty;
+    // ADD THIS: To link the course to the teacher
+    public int InstructorId { get; set; }
 
-        public int DeptId { get; set; }
-    }
+    // Optional: Navigation property to get teacher details
+    public User Instructor { get; set; }
+    public ICollection<Enrollment> Enrollments { get; set; }
 }

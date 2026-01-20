@@ -1,10 +1,12 @@
 import { useState, ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 
 export default function App() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +18,7 @@ export default function App() {
       username: email, 
       password: password 
     };
+    
 
     try {
       const response = await fetch('https://localhost:7229/api/Auth/login', {
@@ -25,18 +28,24 @@ export default function App() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        // Uses the actual username returned by your C# controller to avoid "undefined"
-        alert(`Login Successful! Welcome, ${data.username || email}`);
-        // window.location.href = "/dashboard"; 
-      } else {
-        const errorText = await response.text();
-        alert("Login Failed: " + errorText);
+       const data = await response.json();
+        // Store the user role and ID in local storage
+        localStorage.setItem('userRole', data.userRole);
+        localStorage.setItem('userId', data.userId);
+        
+
+       if (data.userRole === "teacher" || data.UserRole === "teacher") {
+    navigate('/dashboard/teacher');
+}
+      else if (data.userRole === "Student") {
+        alert("Login failed: Unauthorized role");
       }
+   }
     } catch (error) {
       alert("Connection Error: Make sure Visual Studio is running on port 7229");
     }
   };
+  
   
 
   return (

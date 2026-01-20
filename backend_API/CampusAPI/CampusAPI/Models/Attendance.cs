@@ -1,18 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace CampusAPI.Models
+﻿public class Attendance
 {
-    public class Attendance
-    {
-        [Key]
-        public int AttendanceId { get; set; }
-        public int EnrollmentId { get; set; } // Links student to a course
-        public DateTime AttendanceDate { get; set; } = DateTime.Now;
-        public string Status { get; set; } = "Absent"; // Present, Late, or Absent
-        public int MinutesLate { get; set; } = 0;
+    public int AttendanceId { get; set; }
 
-        [ForeignKey("EnrollmentId")]
-        public Enrollment? Enrollment { get; set; }
-    }
+    // Ensure these names match EXACTLY what is in the controller
+    public int UserId { get; set; }
+    public int CourseId { get; set; }
+
+    public string Status { get; set; } // "Present" or "Absent"
+    public DateTime Date { get; set; }
+
+    // Navigation properties
+    public User Student { get; set; }
+    public Course Course { get; set; }
 }
