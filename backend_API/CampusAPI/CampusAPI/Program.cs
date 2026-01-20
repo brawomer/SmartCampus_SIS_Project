@@ -16,9 +16,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<CampusAPI.Data.AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-<<<<<<< HEAD
+// HEAD
 builder.Services.AddControllers();
-=======
+//=======
 // Add services to the container
 builder.Services.AddControllers();
 
@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
         });
 });
 
->>>>>>> a98b45e9c8d66643e8ff59c5b554a099800d1fba
+//>>>>>>> a98b45e9c8d66643e8ff59c5b554a099800d1fba
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -50,13 +50,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 // --- ADD THIS LINE HERE ---
 app.UseCors("AllowWeb"); 
-=======
+//=======
 // ✅ USE CORS (MUST be before MapControllers)
 app.UseCors("AllowFrontend");
->>>>>>> a98b45e9c8d66643e8ff59c5b554a099800d1fba
+//>>>>>>> a98b45e9c8d66643e8ff59c5b554a099800d1fba
 
 app.UseAuthorization();
 

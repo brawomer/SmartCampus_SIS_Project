@@ -9,11 +9,35 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempted with:', { email, password });
-    // Add your login logic here
+
+    const loginData = { 
+      username: email, 
+      password: password 
+    };
+
+    try {
+      const response = await fetch('https://localhost:7229/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Uses the actual username returned by your C# controller to avoid "undefined"
+        alert(`Login Successful! Welcome, ${data.username || email}`);
+        // window.location.href = "/dashboard"; 
+      } else {
+        const errorText = await response.text();
+        alert("Login Failed: " + errorText);
+      }
+    } catch (error) {
+      alert("Connection Error: Make sure Visual Studio is running on port 7229");
+    }
   };
+  
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center p-4">
@@ -42,16 +66,16 @@ export default function App() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/90">Email</Label>
+              <Label htmlFor="email" className="text-white/90">Email / Username</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                  className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 backdrop-blur-sm focus:bg-white/20 focus:border-white/40 transition-all"
+                  className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 backdrop-blur-sm"
                   required
                 />
               </div>
@@ -59,7 +83,7 @@ export default function App() {
 
             {/* Password field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white/90">Password</Label>
+              <Label htmlFor="password" title="Password" className="text-white/90">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
                 <Input
@@ -68,7 +92,7 @@ export default function App() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 backdrop-blur-sm focus:bg-white/20 focus:border-white/40 transition-all"
+                  className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 backdrop-blur-sm"
                   required
                 />
                 <button
@@ -76,37 +100,20 @@ export default function App() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/90 transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember me and forgot password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-2 focus:ring-white/50"
-                />
-                <span className="text-sm text-white/80">Remember me</span>
-              </label>
-              <a href="#" className="text-sm text-white/80 hover:text-white transition-colors">
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Login button */}
             <Button
               type="submit"
-              className="w-full bg-white text-purple-600 hover:bg-white/90 font-semibold py-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-white text-blue-600 hover:bg-white/90 font-bold py-6 rounded-xl transition-all transform hover:scale-[1.02]"
             >
               Sign In
             </Button>
           </form>
+          </div>
+      
 
           {/* Divider */}
           <div className="relative my-6">
@@ -138,7 +145,6 @@ export default function App() {
             </button>
           </div>
         </div>
-      </div>
 
       <style>{`
         @keyframes blob {
