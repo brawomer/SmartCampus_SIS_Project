@@ -1,15 +1,18 @@
-﻿public class Attendance
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
+public class Attendance
 {
     public int AttendanceId { get; set; }
 
-    // Ensure these names match EXACTLY what is in the controller
-    public int UserId { get; set; }
-    public int CourseId { get; set; }
+    // Match the DB: Attendance references an Enrollment
+    public int EnrollmentId { get; set; }
 
+    public DateTime AttendanceDate { get; set; }
     public string Status { get; set; } // "Present" or "Absent"
-    public DateTime Date { get; set; }
+    public int MinutesLate { get; set; }
 
-    // Navigation properties
-    public User Student { get; set; }
-    public Course Course { get; set; }
+    // Navigation
+    [ForeignKey("EnrollmentId")]
+    public Enrollment Enrollment { get; set; }
 }
