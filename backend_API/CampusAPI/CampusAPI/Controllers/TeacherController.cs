@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// backend_API/CampusAPI/CampusAPI/Controllers/TeacherController.cs
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CampusAPI.Data;
 using CampusAPI.Models;
@@ -35,9 +36,9 @@ namespace CampusAPI.Controllers
                 seminar = e.Seminar,
                 midterm = e.Midterm,
                 final = e.Final,
-                // Fixed attendance Count
+                // Count attendance by EnrollmentId
                 attendanceCount = _context.Attendances
-                    .Count(a => a.UserId == e.UserId && a.CourseId == courseId && a.Status == "Present")
+                    .Count(a => a.EnrollmentId == e.EnrollmentId && a.Status == "Present")
             }).ToList();
 
             return Ok(students);
