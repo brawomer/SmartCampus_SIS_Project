@@ -8,12 +8,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 /**
  * @property string $role
  * @property string $department
  */
 class User extends Authenticatable
 {
+    use HasApiTokens, Notifiable;
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
@@ -26,8 +28,8 @@ class User extends Authenticatable
     'name',
     'email',
     'password',
-    'role',       
-    'department',  
+    'role',
+    'department',
 ];
 
     /**
