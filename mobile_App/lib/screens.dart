@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'api_service.dart'; // To call your Laravel API
-import 'dashboard.dart';   // To move to the dashboard after login
+import 'dashboard.dart'; // To move to the dashboard after login
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,13 +18,15 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     // 1. Call your real Laravel Backend
     bool success = await _apiService.login(
-      emailController.text, 
-      passwordController.text
+      emailController.text,
+      passwordController.text,
     );
 
     if (success) {
       // 2. Decide the role (you can improve this later with a real API response)
-      String role = emailController.text.contains('teacher') ? 'Teacher' : 'Student';
+      String role = emailController.text.contains('teacher')
+          ? 'Teacher'
+          : 'Student';
 
       // 3. Move to the dashboard you created
       Navigator.pushReplacement(
@@ -51,21 +53,27 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 15),
             TextField(
               controller: passwordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-  onPressed: _handleLogin, // This MUST point to your function
-  child: const Text('Login'),
-),
+                onPressed: _handleLogin, // This MUST point to your function
+                child: const Text('Login'),
+              ),
             ),
           ],
         ),
