@@ -14,9 +14,9 @@ class ApiService {
 
   // Default headers for all requests
   static Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
   // ============================================
   // AUTHENTICATION
@@ -25,15 +25,14 @@ class ApiService {
   /// Login with email and password
   /// Returns user data with role on success
   static Future<Map<String, dynamic>> login(
-      String email, String password) async {
+    String email,
+    String password,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login.php'),
         headers: _headers,
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       return _handleResponse(response);
@@ -87,7 +86,9 @@ class ApiService {
 
   /// POST request with body
   static Future<dynamic> post(
-      String endpoint, Map<String, dynamic> body) async {
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/$endpoint'),
@@ -135,10 +136,10 @@ class ApiService {
   // ============================================
 
   /// Get lectures for student dashboard
-  Future<List<Map<String, dynamic>>> getLectures() async {
+  Future<List<Map<String, dynamic>>> getLectures(int studentId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/lectures.php'),
+        Uri.parse('$baseUrl/lectures.php?student_id=$studentId'),
         headers: _headers,
       );
       final data = _handleResponse(response);
@@ -155,10 +156,10 @@ class ApiService {
   }
 
   /// Get grades for student dashboard
-  Future<List<Map<String, dynamic>>> getGrades() async {
+  Future<List<Map<String, dynamic>>> getGrades(int studentId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/grades.php'),
+        Uri.parse('$baseUrl/grades.php?student_id=$studentId'),
         headers: _headers,
       );
       final data = _handleResponse(response);
@@ -175,10 +176,10 @@ class ApiService {
   }
 
   /// Get attendance for student dashboard
-  Future<List<Map<String, dynamic>>> getAttendance() async {
+  Future<List<Map<String, dynamic>>> getAttendance(int studentId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/attendance.php'),
+        Uri.parse('$baseUrl/attendance.php?student_id=$studentId'),
         headers: _headers,
       );
       final data = _handleResponse(response);
@@ -285,7 +286,8 @@ class ApiService {
 
   /// Get attendance records for a specific student
   Future<List<Map<String, dynamic>>> getStudentAttendance(
-      dynamic studentId) async {
+    dynamic studentId,
+  ) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/student_attendance.php?student_id=$studentId'),
@@ -324,6 +326,217 @@ class ApiService {
       return data['success'] == true;
     } catch (e) {
       return false;
+    }
+  }
+
+  // ============================================
+  // HOD DASHBOARD METHODS
+  // ============================================
+
+  /// Get courses for HOD's department
+  Future<List<Map<String, dynamic>>> getHODCourses(int hodId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/hod/courses.php?hod_id=$hodId'),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      if (data['courses'] is List) {
+        return List<Map<String, dynamic>>.from(data['courses']);
+      }
+      if (data['data'] is List) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
+      return [];
+    } catch (e) {
+      throw ApiException('Error loading HOD courses: $e');
+    }
+  }
+
+  /// Get assignments for HOD's department
+  Future<List<Map<String, dynamic>>> getHODAssignments(int hodId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/hod/assignments.php?hod_id=$hodId'),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      if (data['assignments'] is List) {
+        return List<Map<String, dynamic>>.from(data['assignments']);
+      }
+      if (data['data'] is List) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
+      return [];
+    } catch (e) {
+      throw ApiException('Error loading HOD assignments: $e');
+    }
+  }
+
+  /// Get attendance for HOD's department
+  Future<List<Map<String, dynamic>>> getHODAttendance(int hodId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/hod/attendance.php?hod_id=$hodId'),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      if (data['attendance_summary'] is List) {
+        return List<Map<String, dynamic>>.from(data['attendance_summary']);
+      }
+      if (data['attendance'] is List) {
+        return List<Map<String, dynamic>>.from(data['attendance']);
+      }
+      if (data['data'] is List) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
+      return [];
+    } catch (e) {
+      throw ApiException('Error loading HOD attendance: $e');
+    }
+  }
+
+  /// Get schedule for HOD's department
+  Future<List<Map<String, dynamic>>> getHODSchedule(int hodId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/hod/schedule.php?hod_id=$hodId'),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      if (data['schedule'] is List) {
+        return List<Map<String, dynamic>>.from(data['schedule']);
+      }
+      if (data['data'] is List) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
+      return [];
+    } catch (e) {
+      throw ApiException('Error loading HOD schedule: $e');
+    }
+  }
+
+  // ============================================
+  // TECHNICIAN DASHBOARD METHODS
+  // ============================================
+
+  /// Get maintenance requests for technician
+  Future<List<Map<String, dynamic>>> getMaintenanceRequests(
+    int technicianId,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/technician/maintenance_requests.php?technician_id=$technicianId',
+        ),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      if (data['maintenance_requests'] is List) {
+        return List<Map<String, dynamic>>.from(data['maintenance_requests']);
+      }
+      if (data['data'] is List) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
+      return [];
+    } catch (e) {
+      throw ApiException('Error loading maintenance requests: $e');
+    }
+  }
+
+  /// Mark item as fixed
+  Future<bool> fixItem(dynamic itemId, String notes) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/technician/fix_item.php'),
+        headers: _headers,
+        body: jsonEncode({'item_id': itemId, 'notes': notes}),
+      );
+      final data = _handleResponse(response);
+      return data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Create a new purchase request
+  Future<bool> createPurchaseRequest(
+    int technicianId,
+    String itemName,
+    int quantity,
+    String reason,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/technician/purchase_request.php'),
+        headers: _headers,
+        body: jsonEncode({
+          'technician_id': technicianId,
+          'item_name': itemName,
+          'quantity': quantity,
+          'reason': reason,
+        }),
+      );
+      final data = _handleResponse(response);
+      return data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ============================================
+  // COMMON METHODS (for all roles)
+  // ============================================
+
+  /// Get notifications for user
+  Future<List<Map<String, dynamic>>> getNotifications(int userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/common/notifications.php?user_id=$userId'),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      if (data['notifications'] is List) {
+        return List<Map<String, dynamic>>.from(data['notifications']);
+      }
+      if (data['data'] is List) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
+      return [];
+    } catch (e) {
+      throw ApiException('Error loading notifications: $e');
+    }
+  }
+
+  /// Get unread notification count
+  Future<int> getUnreadCount(int userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/common/unread_count.php?user_id=$userId'),
+        headers: _headers,
+      );
+      final data = _handleResponse(response);
+      return data['count'] ?? 0;
+    } catch (e) {
+      return 0;
     }
   }
 

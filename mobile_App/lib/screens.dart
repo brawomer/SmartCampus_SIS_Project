@@ -87,11 +87,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (data['success'] == true) {
         // Map role_id to role name
         String role = _getRoleName(data['role_id']);
+        int userId = data['user_id'] ?? 0;
+        String userName = data['name'] ?? 'User';
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => DashboardScreen(role: role),
+            builder: (context) =>
+                DashboardScreen(role: role, userId: userId, userName: userName),
           ),
         );
       } else {
@@ -111,7 +114,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Connection error: $e'), backgroundColor: Colors.red),
+          content: Text('Connection error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

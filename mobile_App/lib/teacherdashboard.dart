@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'services/api_service.dart';
 
 class TeacherDashboard extends StatefulWidget {
-  const TeacherDashboard({super.key});
+  final int userId;
+  final String userName;
+
+  const TeacherDashboard({
+    super.key,
+    required this.userId,
+    required this.userName,
+  });
 
   @override
   State<TeacherDashboard> createState() => _TeacherDashboardState();
@@ -29,6 +36,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         title: const Text('Teacher Dashboard'),
         backgroundColor: Colors.blue,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -368,8 +382,9 @@ class _StudentDetailsSheetState extends State<StudentDetailsSheet> {
                               backgroundColor: _tabIndex == 0
                                   ? Colors.white
                                   : Colors.blue.shade600,
-                              foregroundColor:
-                                  _tabIndex == 0 ? Colors.blue : Colors.white,
+                              foregroundColor: _tabIndex == 0
+                                  ? Colors.blue
+                                  : Colors.white,
                             ),
                           ),
                         ),
@@ -385,8 +400,9 @@ class _StudentDetailsSheetState extends State<StudentDetailsSheet> {
                               backgroundColor: _tabIndex == 1
                                   ? Colors.white
                                   : Colors.blue.shade600,
-                              foregroundColor:
-                                  _tabIndex == 1 ? Colors.blue : Colors.white,
+                              foregroundColor: _tabIndex == 1
+                                  ? Colors.blue
+                                  : Colors.white,
                             ),
                           ),
                         ),
@@ -779,12 +795,12 @@ class _MarkAttendanceSheetState extends State<MarkAttendanceSheet> {
                               final dateString =
                                   '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
-                              final success =
-                                  await widget.apiService.markAttendance(
-                                widget.student['id'],
-                                dateString,
-                                selectedStatus,
-                              );
+                              final success = await widget.apiService
+                                  .markAttendance(
+                                    widget.student['id'],
+                                    dateString,
+                                    selectedStatus,
+                                  );
 
                               if (success) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -795,10 +811,10 @@ class _MarkAttendanceSheetState extends State<MarkAttendanceSheet> {
                                   ),
                                 );
                                 setState(() {
-                                  attendanceFuture =
-                                      widget.apiService.getStudentAttendance(
-                                    widget.student['id'],
-                                  );
+                                  attendanceFuture = widget.apiService
+                                      .getStudentAttendance(
+                                        widget.student['id'],
+                                      );
                                 });
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -882,5 +898,33 @@ class _MarkAttendanceSheetState extends State<MarkAttendanceSheet> {
       default:
         return Icons.help;
     }
+  }
+}
+
+// Add logout method to _TeacherDashboardState class (move this to line 270)
+extension TeacherDashboardLogout on _TeacherDashboardState {
+  void _logout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pushReplacementNamed(context, '/');
+              },
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

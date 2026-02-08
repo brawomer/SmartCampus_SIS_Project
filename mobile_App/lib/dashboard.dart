@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'services/api_service.dart';
 import 'teacherdashboard.dart';
+import 'hoddashboard.dart';
+import 'techniciandashboard.dart';
+import 'staffdashboard.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final String role; // This matches the "role" variable you are passing
+  final String role;
+  final int userId;
+  final String userName;
 
-  const DashboardScreen({super.key, required this.role});
+  const DashboardScreen({
+    super.key,
+    required this.role,
+    required this.userId,
+    required this.userName,
+  });
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -22,27 +32,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // Load data from API on init
-    lecturesFuture = _apiService.getLectures();
-    gradesFuture = _apiService.getGrades();
-    attendanceFuture = _apiService.getAttendance();
+    // Load data from API on init with student ID
+    lecturesFuture = _apiService.getLectures(widget.userId);
+    gradesFuture = _apiService.getGrades(widget.userId);
+    attendanceFuture = _apiService.getAttendance(widget.userId);
   }
 
   @override
   Widget build(BuildContext context) {
-    // If teacher, show teacher dashboard
-    if (widget.role == 'Teacher') {
-      return const TeacherDashboard();
+    // Route to appropriate dashboard based on role
+    switch (widget.role) {
+      case 'HOD':
+        return HODDashboard(userId: widget.userId, userName: widget.userName);
+      case 'Technician':
+        return TechnicianDashboard(
+          userId: widget.userId,
+          userName: widget.userName,
+        );
+      case 'Staff':
+        return StaffDashboard(userId: widget.userId, userName: widget.userName);
+      case 'Teacher':
+        return TeacherDashboard(
+          userId: widget.userId,
+          userName: widget.userName,
+        );
+      default:
+        // Student dashboard (default)
+        return _buildStudentDashboard();
     }
+  }
 
-    // Otherwise show student dashboard
+  Widget _buildStudentDashboard() {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.role} Dashboard'),
         backgroundColor: Colors.green,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
-      body: _buildStudentDashboard(),
+      body: _buildStudentDashboardContent(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -62,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStudentDashboard() {
+  Widget _buildStudentDashboardContent() {
     switch (_selectedIndex) {
       case 0:
         return _buildLecturesView();
@@ -326,5 +360,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
       default:
         return Icons.help;
     }
+  }
+
+  void _logout(BuildContext context) {
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pushReplacementNamed(context, '/');
+              },
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
