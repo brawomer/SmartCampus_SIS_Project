@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens.dart'; // Import the proper LoginScreen with login logic
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
@@ -16,4 +18,6 @@ class MyApp extends StatelessWidget {
       home: const LoginScreen(),
     );
   }
+
+  // Test login
 }

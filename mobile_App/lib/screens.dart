@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart'; // To call your Laravel API
-import 'dashboard.dart'; // To move to the dashboard after login
+import 'services/api_service.dart';
+import 'dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,72 +12,131 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final ApiService _apiService = ApiService(); // Connect to your API logic
-
-  // THIS IS THE MISSING FUNCTION!
-  void _handleLogin() async {
-    // 1. Call your real Laravel Backend
-    bool success = await _apiService.login(
-      emailController.text,
-      passwordController.text,
-    );
-
-    if (success) {
-      // 2. Decide the role (you can improve this later with a real API response)
-      String role = emailController.text.contains('teacher')
-          ? 'Teacher'
-          : 'Student';
-
-      // 3. Move to the dashboard you created
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DashboardScreen(role: role)),
-      );
-    } else {
-      // Show error if login fails
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Email or Password')),
-      );
-    }
-  }
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Login'), centerTitle: true),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.school, size: 80, color: Colors.blue),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             TextField(
               controller: emailController,
               decoration: const InputDecoration(
                 labelText: 'Email',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
             TextField(
               controller: passwordController,
-              obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
               ),
+              obscureText: true,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
+              height: 50,
               child: ElevatedButton(
-                onPressed: _handleLogin, // This MUST point to your function
-                child: const Text('Login'),
+                onPressed: _isLoading ? null : _login,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Login', style: TextStyle(fontSize: 18)),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final data = await ApiService.login(email, password);
+
+      if (!mounted) return;
+
+      if (data['success'] == true) {
+        // Map role_id to role name
+        String role = _getRoleName(data['role_id']);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DashboardScreen(role: role),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Connection error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // Map role_id to role name - matches database values
+  String _getRoleName(dynamic roleId) {
+    switch (roleId.toString()) {
+      case '1':
+        return 'HOC'; // Head of College
+      case '2':
+        return 'HOD'; // Head of Department
+      case '3':
+        return 'Teacher';
+      case '4':
+        return 'Technician';
+      case '5':
+        return 'Staff';
+      case '6':
+        return 'Marketing';
+      case '7':
+        return 'Student';
+      default:
+        return 'Student';
+    }
   }
 }
