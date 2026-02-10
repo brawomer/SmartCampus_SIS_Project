@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "code": "CS101",
+        "name": "Introduction to Programming",
+        "description": "Learn the fundamentals of programming using Python",
+        "credits": 3,
+        "department": "Computer Science",
+        "teacher_id": 3,
+        "semester": "Spring 2026",
+        "schedule": "Mon\/Wed 10:00-11:30 AM",
+        "room": "Lab 202",
+        "capacity": 30,
+        "created_at": "2026-02-08 18:31:55"
+    },
+    {
+        "id": 2,
+        "code": "CS201",
+        "name": "Data Structures",
+        "description": "Advanced data structures and algorithms",
+        "credits": 4,
+        "department": "Computer Science",
+        "teacher_id": 3,
+        "semester": "Spring 2026",
+        "schedule": "Tue\/Thu 2:00-3:30 PM",
+        "room": "Lab 301",
+        "capacity": 25,
+        "created_at": "2026-02-08 18:31:55"
+    }
+]

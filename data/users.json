@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "username": "admin_user",
+        "password": "$2y$10$ExMu07eFbYyqgBTPqC4KSOkwexQtruM5\/kUqy.1LiMlymqPd4d8I.",
+        "email": "admin@campus.com",
+        "role": "admin",
+        "full_name": "System Administrator"
+    },
+    {
+        "id": 2,
+        "username": "tech_mike",
+        "password": "$2y$10$ExMu07eFbYyqgBTPqC4KSOkwexQtruM5\/kUqy.1LiMlymqPd4d8I.",
+        "email": "mike@tech.com",
+        "role": "technician",
+        "full_name": "Mike Repairman"
+    },
+    {
+        "id": 3,
+        "username": "teacher_jane",
+        "password": "$2y$10$ExMu07eFbYyqgBTPqC4KSOkwexQtruM5\/kUqy.1LiMlymqPd4d8I.",
+        "email": "jane@campus.com",
+        "role": "teacher",
+        "full_name": "Jane Doe"
+    },
+    {
+        "id": 4,
+        "username": "parent_smith",
+        "password": "$2y$10$ExMu07eFbYyqgBTPqC4KSOkwexQtruM5\/kUqy.1LiMlymqPd4d8I.",
+        "email": "smith@parent.com",
+        "role": "parent",
+        "full_name": "John Smith"
+    },
+    {
+        "id": 5,
+        "username": "student_alex",
+        "password": "$2y$10$ExMu07eFbYyqgBTPqC4KSOkwexQtruM5\/kUqy.1LiMlymqPd4d8I.",
+        "email": "alex@student.com",
+        "role": "student",
+        "full_name": "Alex Thompson"
+    }
+]
