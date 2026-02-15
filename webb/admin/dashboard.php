@@ -1,175 +1,144 @@
 <?php
 /**
- * Admin Dashboard — Premium Glassmorphism Design
+ * register_student.php - Admin tool to register new students
  */
-require_once __DIR__ . '/../middleware/auth.php';
-require_once __DIR__ . '/../db.php';
-require_once __DIR__ . '/../includes/helpers.php';
+require '../db.php';
+session_start();
 
-protectRouteWithRole('admin');
+// Security: Only Admins should be able to see this page
+if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'super-admin')) {
+    die("Unauthorized access. Only administrators can register students.");
+}
 
-$user = getCurrentUser();
+$message = "";
+$messageType = ""; // 'success' or 'error'
 
-// Get statistics
-$allUsers = $pdo->getAll('users');
-$allCourses = $pdo->getAll('courses');
-$allEnrollments = $pdo->getAll('enrollments');
-$allGrades = $pdo->getAll('grades');
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // 1. Collect and Sanitize Inputs
+    $full_name   = $_POST['full_name'];
+    $email       = $_POST['email'];
+    $username    = $_POST['username'];
+    $password    = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash it!
+    $student_id  = $_POST['student_id_number'];
+    $department  = $_POST['department'];
+    $current_year = $_POST['current_year'];
 
-$stats = [
-    'total_users' => count($allUsers),
-    'total_students' => count(array_filter($allUsers, fn($u) => $u['role'] === 'student')),
-    'total_teachers' => count(array_filter($allUsers, fn($u) => $u['role'] === 'teacher')),
-    'total_courses' => count($allCourses),
-    'total_enrollments' => count($allEnrollments),
-    'total_grades' => count($allGrades),
-];
+    try {
+        // START TRANSACTION: This ensures both tables update together
+        $pdo->beginTransaction();
 
-$pageTitle = "Admin Dashboard";
-require_once __DIR__ . '/../includes/header.php';
+        // 2. Insert into 'users' table
+        $sqlUser = "INSERT INTO users (username, password, email, role, full_name) VALUES (?, ?, ?, 'student', ?)";
+        $stmtUser = $pdo->prepare($sqlUser);
+        $stmtUser->execute([$username, $password, $email, $full_name]);
+        
+        // Get the ID of the user we just created
+        $newUserId = $pdo->lastInsertId();
+
+        // 3. Insert into 'students' table
+        $sqlStudent = "INSERT INTO students (user_id, student_id_number, department, current_year) VALUES (?, ?, ?, ?)";
+        $stmtStudent = $pdo->prepare($sqlStudent);
+        $stmtStudent->execute([$newUserId, $student_id, $department, $current_year]);
+
+        // COMMIT: Save everything to the database
+        $pdo->commit();
+        
+        $message = "Student <b>$full_name</b> successfully registered!";
+        $messageType = "success";
+
+    } catch (Exception $e) {
+        // ROLLBACK: If anything went wrong, undo everything
+        $pdo->rollBack();
+        $message = "Error: " . $e->getMessage();
+        $messageType = "error";
+    }
+}
 ?>
 
-<div class="dashboard">
-    <!-- Welcome Header -->
-    <div class="dash-header reveal">
-        <h1 class="dash-greeting">
-            Good <?= date('H') < 12 ? 'morning' : (date('H') < 17 ? 'afternoon' : 'evening') ?>,
-            <span class="gradient-text"><?= htmlspecialchars($user['full_name']) ?></span> 👋
-        </h1>
-        <p class="dash-subtext">Here's what's happening across your campus today.</p>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartCampus | Register Student</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen p-8">
 
-    <!-- Statistics Grid -->
-    <div class="stats-row stagger-children">
-        <div class="glass-card dash-stat reveal">
-            <div class="dash-stat-info">
-                <p>Total Users</p>
-                <div class="dash-stat-value" data-count="<?= $stats['total_users'] ?>">0</div>
-            </div>
-            <div class="dash-stat-icon indigo"><i class="fas fa-users"></i></div>
-        </div>
-
-        <div class="glass-card dash-stat reveal">
-            <div class="dash-stat-info">
-                <p>Students</p>
-                <div class="dash-stat-value" data-count="<?= $stats['total_students'] ?>">0</div>
-            </div>
-            <div class="dash-stat-icon emerald"><i class="fas fa-user-graduate"></i></div>
-        </div>
-
-        <div class="glass-card dash-stat reveal">
-            <div class="dash-stat-info">
-                <p>Teachers</p>
-                <div class="dash-stat-value" data-count="<?= $stats['total_teachers'] ?>">0</div>
-            </div>
-            <div class="dash-stat-icon cyan"><i class="fas fa-chalkboard-teacher"></i></div>
-        </div>
-
-        <div class="glass-card dash-stat reveal">
-            <div class="dash-stat-info">
-                <p>Active Courses</p>
-                <div class="dash-stat-value" data-count="<?= $stats['total_courses'] ?>">0</div>
-            </div>
-            <div class="dash-stat-icon violet"><i class="fas fa-book"></i></div>
-        </div>
-
-        <div class="glass-card dash-stat reveal">
-            <div class="dash-stat-info">
-                <p>Enrollments</p>
-                <div class="dash-stat-value" data-count="<?= $stats['total_enrollments'] ?>">0</div>
-            </div>
-            <div class="dash-stat-icon amber"><i class="fas fa-clipboard-list"></i></div>
-        </div>
-
-        <div class="glass-card dash-stat reveal">
-            <div class="dash-stat-info">
-                <p>Grade Entries</p>
-                <div class="dash-stat-value" data-count="<?= $stats['total_grades'] ?>">0</div>
-            </div>
-            <div class="dash-stat-icon rose"><i class="fas fa-chart-line"></i></div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="glass-card p-4 mb-4 reveal">
-        <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;">
-            <i class="fas fa-bolt" style="color: var(--amber);"></i> Quick Actions
-        </h2>
-        <div class="quick-actions-grid">
-            <a href="/admin/users-manage.php" class="glass-card action-card">
-                <div class="action-icon"><i class="fas fa-users-cog"></i></div>
-                <div>
-                    <div class="action-title">Manage Users</div>
-                    <div class="action-desc">Create, edit, delete users</div>
-                </div>
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-8 flex items-center justify-between">
+            <a href="dashboard.php" class="text-blue-600 font-bold text-sm hover:underline">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
             </a>
-
-            <a href="/admin/management.php" class="glass-card action-card">
-                <div class="action-icon"><i class="fas fa-book-open"></i></div>
-                <div>
-                    <div class="action-title">Manage Courses</div>
-                    <div class="action-desc">Add and edit courses</div>
-                </div>
-            </a>
-
-            <a href="#" class="glass-card action-card">
-                <div class="action-icon"><i class="fas fa-chart-bar"></i></div>
-                <div>
-                    <div class="action-title">View Reports</div>
-                    <div class="action-desc">Analytics and insights</div>
-                </div>
-            </a>
+            <h1 class="text-2xl font-black text-slate-800">Register New Student</h1>
         </div>
+
+        <?php if($message): ?>
+            <div class="mb-6 p-4 rounded-xl flex items-center gap-3 <?= $messageType === 'success' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-red-100 text-red-700 border border-red-200' ?>">
+                <i class="fas <?= $messageType === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' ?>"></i>
+                <p class="text-sm font-bold"><?= $message ?></p>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" class="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- User Account Info -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest border-b pb-2">Account Details</h3>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Full Name</label>
+                        <input type="text" name="full_name" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Username</label>
+                        <input type="text" name="username" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Email Address</label>
+                        <input type="email" name="email" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Initial Password</label>
+                        <input type="password" name="password" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                </div>
+
+                <!-- Academic Info -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-widest border-b pb-2">Academic Profile</h3>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Student ID (Unique)</label>
+                        <input type="text" name="student_id_number" placeholder="e.g. SC-2026-001" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Department</label>
+                        <select name="department" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Business Administration">Business Administration</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Visual Arts">Visual Arts</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Current Year</label>
+                        <select name="current_year" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <option value="1">Year 1</option>
+                            <option value="2">Year 2</option>
+                            <option value="3">Year 3</option>
+                            <option value="4">Year 4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-user-plus"></i> Finalize Registration
+                </button>
+            </div>
+        </form>
     </div>
 
-    <!-- Recent Users Table -->
-    <div class="glass-card reveal" style="overflow: hidden;">
-        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);">
-            <h2 style="font-size: 1.1rem; font-weight: 600;">
-                <i class="fas fa-clock" style="color: var(--primary-light);"></i> Recent Users
-            </h2>
-        </div>
-        <div class="data-table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Email</th>
-                        <th>Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    usort($allUsers, function($a, $b) {
-                        return strtotime($b['created_at'] ?? '2020-01-01') - strtotime($a['created_at'] ?? '2020-01-01');
-                    });
-                    $recentUsers = array_slice($allUsers, 0, 5);
-                    foreach ($recentUsers as $recentUser):
-                        $roleBadge = match($recentUser['role']) {
-                            'admin' => 'badge-admin',
-                            'teacher', 'head_teacher' => 'badge-teacher',
-                            'student' => 'badge-student',
-                            default => 'badge-default'
-                        };
-                    ?>
-                        <tr>
-                            <td style="font-weight: 500; color: var(--text-primary);">
-                                <?= htmlspecialchars($recentUser['full_name']) ?>
-                            </td>
-                            <td>
-                                <span class="badge <?= $roleBadge ?>">
-                                    <?= ucfirst($recentUser['role']) ?>
-                                </span>
-                            </td>
-                            <td><?= htmlspecialchars($recentUser['email']) ?></td>
-                            <td><?= formatDate($recentUser['created_at'] ?? '') ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+</body>
+</html>
